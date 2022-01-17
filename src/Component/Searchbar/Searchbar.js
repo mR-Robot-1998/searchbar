@@ -1,104 +1,147 @@
 import React from "react";
 import Card from "react-bootstrap/Card";
-import CardGroup from 'react-bootstrap-CardGroup'
-import axios from "axios"; 
-import './Searchbar.css'
-
+import axios from "axios";
+import './Searchbar.css';
 
 class Searchbar extends React.Component{
-        state = {
-        persons:[]
-        } 
+    constructor(props){
+        super(props)
+        this.state = {
+            persons:[],
+            currentPage:1,
+            postPerpage:3,
+        };
+        this.handleClick = this.handleClick.bind(this);
+    }    
+        // create Search and Filter
         getShowall = (e) => {
             e.preventDefault();
             axios.get('http://karanza.ir:8080/getall').then(res => {
                 const persons=res.data
                 this.setState({persons})
-                console.log(res.data)
+                // console.log(res.data)
             }).catch(err => {
-                console.log(err)
+                // console.log(err)
             })
-        }    
+        }
+        nameFind = (e) =>{
+            let val=e.target.value;
+            console.log(val)
+            if (val.length > 2){
+            axios.get(`http://karanza.ir:8080/search?name=${val}`,{
+                headers: {
+                    'Content-Type' : "text/html",
+                    'charset':"utf-8"
+
+                },
+            }).then( res => {
+                const persons=res.data
+                this.setState({persons})
+            })
+        }
+    }
+        familyFind = (e) => {
+            let val=e.target.value;
+            if (val.length > 2){
+                axios.get(`http://karanza.ir:8080/search?family=${val}`,{
+                    headers: {
+                        'Content-Type' : "text/html",
+                        'charset':"utf-8"
+    
+                    },
+                }).then( res => {
+                    const persons=res.data
+                    this.setState({persons})
+                })        }
+            }
+        
+        ageFind = (e) =>{
+            let val=e.target.value;
+                axios.get(`http://karanza.ir:8080/search?age=${val}`).then( res => {
+                    const persons=res.data
+                    this.setState({persons})
+                })
+            
+            
+        }
+        workFind = (e) => {
+            let val=e.target.value;
+            if (val.length > 2){
+                axios.get(`http://karanza.ir:8080/search?work=${val}`).then( res => {
+                    const persons=res.data
+                    this.setState({persons})
+                })
+        }
+    } 
+    // function id page
+    handleClick(event) {
+        this.setState({
+          currentPage: Number(event.target.id)
+        });
+      }
         render() {
+        // create handle pagination
+        const  pepole= this.state.persons;
+        const currentPage =this.state.currentPage;
+        const postPerpage = this.state.postPerpage;
+
+        const indexOfLastTodo = currentPage * postPerpage;
+        const indexOfFirstTodo = indexOfLastTodo - postPerpage;
+        const currentPersons = pepole.slice(indexOfFirstTodo, indexOfLastTodo);
+
+        const renderPersons = currentPersons.map((todo, index) => {
+            return <li key={index}>{todo}</li>;
+        });
+        const pageNumbers = [];
+        for (let i = 1; i <= Math.ceil(pepole.length / postPerpage); i++) {
+            pageNumbers.push(i);
+            }
+             const renderPageNumbers = pageNumbers.map(number => {
+                return (
+                  <li
+                    key={number}
+                    id={number}
+                    onClick={this.handleClick}
+                  >
+                    {number}
+                  </li>
+                );
+              });
             return(
                 <div id='searchbar'>
                 <form>
-                 <button type="submit" id="showall" onClick={(e) => this.getShowall(e)} >ShowAll</button>
-                 <input type="text" name='search' id='searchInput' placeholder="Search "/>
-                 <button type="submit" id="filter">filter</button>
+                 <button type="submit" id="showall" onClick={(e) => this.getShowall(e)} >نمایش</button>
+                 <input type="text"  id='Fname' placeholder="Search Name " onChange={(e)=> this.nameFind(e)}/>
+                 <input type="text"  id='Flastname' placeholder="Search last " onChange={(e)=> this.familyFind(e)}/>
+                 <input type="text"  id='Fage' placeholder="Search Age " onChange={(e)=>this.ageFind(e)}/>
+                 <input type="text"  id='Fwork' placeholder="Search Work " onChange={(e)=>this.workFind(e)}/>
                 </form>
-                <ul>
+                <div id='cont'>
                     {
-                    this.state.persons.map( users => {
+                        this.state.persons.map( users => {
                             return (
-                                <div id="card__profile">
-                                    <CardGroup>
-                                            <Card>
-                                                <Card.Img variant="top" src="holder.js/100px160" />
-                                                <Card.Body>
-                                                <Card.Title>Card title</Card.Title>
-                                                <Card.Text>
-                                                    This is a wider card with supporting text below as a natural lead-in to
-                                                    additional content. This content is a little bit longer.
-                                                </Card.Text>
-                                                </Card.Body>
-                                                <Card.Footer>
-                                                <small className="text-muted">Last updated 3 mins ago</small>
-                                                </Card.Footer>
-                                            </Card>
-                                            <Card>
-                                                <Card.Img variant="top" src="holder.js/100px160" />
-                                                <Card.Body>
-                                                <Card.Title>Card title</Card.Title>
-                                                <Card.Text>
-                                                    This card has supporting text below as a natural lead-in to additional
-                                                    content.{' '}
-                                                </Card.Text>
-                                                </Card.Body>
-                                                <Card.Footer>
-                                                <small className="text-muted">Last updated 3 mins ago</small>
-                                                </Card.Footer>
-                                            </Card>
-                                            <Card>
-                                                <Card.Img variant="top" src="holder.js/100px160" />
-                                                <Card.Body>
-                                                <Card.Title>Card title</Card.Title>
-                                                <Card.Text>
-                                                    This is a wider card with supporting text below as a natural lead-in to
-                                                    additional content. This card has even longer content than the first to
-                                                    show that equal height action.
-                                                </Card.Text>
-                                                </Card.Body>
-                                                <Card.Footer>
-                                                <small className="text-muted">Last updated 3 mins ago</small>
-                                                </Card.Footer>
-                                            </Card>
-                                </CardGroup>
-                                    {/* <Card style={{ width: '18rem' }}>
-                                        <Card.Img variant="top" src={users.profile_image} />
+                                
+                                    <Card  id='profile' style={{ width: '24rem' }}>
+                                        <Card.Img variant="top" src={users.profile_image}/>
                                         <Card.Body>
-                                            <Card.Title>اسم : {users.name}</Card.Title>
-                                            <Card.Text>
-                                            نام خانوادگی : {users.family}
-                                            </Card.Text>
-                                            <Card.Text>
-                                                سن :{users.age}
-                                            </Card.Text>
-                                            <Card.Text>شغل : {users.work}</Card.Text>
-                                            </Card.Body>
-                                        </Card> */}
-                                        {/* <li>{users.name}</li>
-                                        <li>{users.family}</li>
-                                        <li>{users.age}</li>
-                                        <li><img src={users.profile_image}></img></li> */}
-                                    
-                                </div>
+                                        <Card.Title>نام :  <span>{users.name}</span></Card.Title>
+                                        <Card.Text>
+                                        <span>نام خانوادگی : </span> {users.family}
+                                        </Card.Text>
+                                        <Card.Text>
+                                        <span>سن  :{users.age}</span>
+                                        </Card.Text>
+                                        <Card.Text>
+                                        <span>شغل :{users.work}</span>
+                                        </Card.Text>
+                                        </Card.Body>
+                                    </Card>
                             )
                         })
-
                     }
-               </ul>
-
+                    {renderPersons}
+                    {renderPageNumbers}
+                    </div>
             </div>
         )
     }
